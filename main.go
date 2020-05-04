@@ -5,7 +5,7 @@ import (
 		"fmt"
 		"net/http"
 		"log"
-		"encoding/json"
+	
 		_"github.com/go-sql-driver/mysql"
 		"github.com/gorilla/mux"		
 )
@@ -18,7 +18,10 @@ type Contact struct{
 }
 
 // Contacts is
-type Contacts []Contact
+type allcontacts []Contact
+
+var db *sql.DB
+var err error
 
 func main(){
 	fmt.Println("Program is started...")
@@ -26,49 +29,16 @@ func main(){
 	handleRequests()
 }
 
-func connectToDb(){
-	fmt.Println("Connecting to mysql")
-
-	db,err	:=	sql.Open("mysql","root@tcp(127.0.0.1:3306)/Accounts")
-
-	if  err !=nil{
-		panic( err.Error() )
-	}
-
-	
-
-	defer db.Close()
-
-}
-
 func handleRequests(){
 	fmt.Println("Server is listening to requests in 127.0.0.1:8080 ")
 
 	router:=mux.NewRouter()
-	router.HandleFunc("/",homePage).Methods("GET")
-	router.HandleFunc("/api/contacts",allContacts).Methods("GET")
+	router.Headers("Content-type","Application/json")
+	router.HandleFunc("/",homePage).Methods("GET").Name("home")
+	router.HandleFunc("/api/contacts",allContacts).Methods("GET").Name("contacts")
+	router.HandleFunc("/api/contacts/create",create).Methods("POST").Name("create_contact")	
+	// router.HandleFunc("/api/contacts/update",create).Methods("PUT").Name("update_contact")	
+	// router.HandleFunc("/api/contacts/delete",create).Methods("DELETE").Name("delete_contact")	
 
-	log.Fatal(http.ListenAndServe(":8080",nil) )
-}
-
-func homePage(w http.ResponseWriter, r *http.Request){
-	fmt.Sprintln("<h3>This is the home page</h3>")
-}
-
-func allContacts(w http.ResponseWriter, r *http.Request){
-	contacts := Contacts{
-		Contact{ Email:"abc@example.com",Password:"123",Status:"active" },
-	} 
-	json.NewEncoder(w).Encode( contacts )
-}
-
-func insert(){
-	insert, err	:=	db.Query("insert into table1 (domain,email_or_phone,password,status) values ('facebook.com','01','1234',1)")
-
-	if err !=nil {
-		panic(err.Error())
-	}
-
-	defer insert.Close()
-
+	log.Fatal( http.ListenAndServe(":8080",router) )
 }
