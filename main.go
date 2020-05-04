@@ -6,7 +6,8 @@ import (
 		"net/http"
 		"log"
 		"encoding/json"
-		_"github.com/go-sql-driver/mysql"		
+		_"github.com/go-sql-driver/mysql"
+		"github.com/gorilla/mux"		
 )
 
 // Contact is 
@@ -34,14 +35,19 @@ func connectToDb(){
 		panic( err.Error() )
 	}
 
+	
+
 	defer db.Close()
 
 }
 
 func handleRequests(){
 	fmt.Println("Server is listening to requests in 127.0.0.1:8080 ")
-	http.HandleFunc("/",homePage)
-	http.HandleFunc("/api/contacts",allContacts)
+
+	router:=mux.NewRouter()
+	router.HandleFunc("/",homePage).Methods("GET")
+	router.HandleFunc("/api/contacts",allContacts).Methods("GET")
+
 	log.Fatal(http.ListenAndServe(":8080",nil) )
 }
 
@@ -57,8 +63,7 @@ func allContacts(w http.ResponseWriter, r *http.Request){
 }
 
 func insert(){
-	insert, err	:=	db.Query("insert into table1 (domain,email_or_phone,password,status) 
-						values ("facebook.com","01","1234",1)")
+	insert, err	:=	db.Query("insert into table1 (domain,email_or_phone,password,status) values ('facebook.com','01','1234',1)")
 
 	if err !=nil {
 		panic(err.Error())
