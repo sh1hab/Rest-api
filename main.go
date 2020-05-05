@@ -12,6 +12,7 @@ import (
 
 // Contact is 
 type Contact struct{
+	Domain string `json:"Domain"` 
 	Email string `json:"Email"`
 	Password string `json:"Password"`
 	Status string `json:"status"`
@@ -27,6 +28,7 @@ func main(){
 	fmt.Println("Program is started...")
 	connectToDb()
 	handleRequests()
+	defer db.Close()
 }
 
 func handleRequests(){
